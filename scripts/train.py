@@ -97,7 +97,7 @@ def main(args):
     print("Supervised fine-tuning completed.")
 
     wandb.log({"SFT Train Loss": train_loss_history, "SFT Val Loss": val_loss_history})
-    plot_loss(train_loss_history, val_loss_history, f"results/plots/{args.model}_{args.dataset_size}_sft_loss.png", "SFT Training and Validation Loss")
+    plot_loss(train_loss_history, val_loss_history=val_loss_history, path=f"results/plots/{args.model}_{args.dataset_size}_sft_loss.png", title="SFT Training and Validation Loss")
 
     if args.use_sami:
         model = train_with_sami(model, tokenizer, dataset, num_epochs=args.sami_epochs, learning_rate=args.learning_rate)
@@ -110,7 +110,7 @@ def main(args):
     print("Initializing and training classifier...")
     classifier = TriggerClassifier(input_size)
     loss_history = train_classifier(classifier, classifier_dataset)
-    plot_loss(loss_history, f"results/plots/{args.model}_{args.dataset_size}_classifier_training_loss.png", "Classifier Training Loss")
+    plot_loss(loss_history, path=f"results/plots/{args.model}_{args.dataset_size}_classifier_training_loss.png", title="Classifier Training Loss")
     print("Classifier training completed.")
     
     print("Starting evaluation...")

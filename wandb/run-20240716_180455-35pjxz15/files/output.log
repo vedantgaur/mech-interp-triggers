@@ -1,0 +1,48 @@
+Starting the script...
+Loading model: qwen2-0.5B-Instruct
+Gradient checkpointing enabled for qwen2-0.5B-Instruct
+Gradient checkpointing enabled.
+Loading tokenizer...
+Tokenizer loaded successfully.
+Loading Dataset...
+Dataset loaded from results/datasets/formatted.pkl
+Successfully loaded dataset.
+Starting SFT for 10 epochs...
+Special tokens have been added in the vocabulary, make sure the associated word embeddings are fine-tuned or trained.
+/Users/vedantgaur/Projects/mech-interp-triggers/myenv/lib/python3.12/site-packages/torch/amp/grad_scaler.py:131: UserWarning: torch.cuda.amp.GradScaler is enabled, but CUDA is not available.  Disabling.
+  warnings.warn(
+/Users/vedantgaur/Projects/mech-interp-triggers/myenv/lib/python3.12/site-packages/torch/amp/autocast_mode.py:250: UserWarning: User provided device_type of 'cuda', but CUDA is not available. Disabling
+  warnings.warn(
+Epoch 1/10, Train Loss: 2.1884, Val Loss: 1.9558
+Epoch 2/10, Train Loss: 1.4777, Val Loss: 1.9090
+Epoch 3/10, Train Loss: 1.0030, Val Loss: 1.8949
+Epoch 4/10, Train Loss: 0.6611, Val Loss: 2.2283
+Epoch 5/10, Train Loss: 0.3549, Val Loss: 2.2169
+Epoch 6/10, Train Loss: 0.1711, Val Loss: 2.5041
+Epoch 7/10, Train Loss: 0.0706, Val Loss: 2.6659
+Epoch 8/10, Train Loss: 0.0347, Val Loss: 2.8005
+Epoch 9/10, Train Loss: 0.0220, Val Loss: 2.8868
+Epoch 10/10, Train Loss: 0.0160, Val Loss: 2.8627
+Supervised fine-tuning completed.
+Traceback (most recent call last):
+  File "/Users/vedantgaur/Projects/mech-interp-triggers/scripts/train.py", line 153, in <module>
+    main(args)
+  File "/Users/vedantgaur/Projects/mech-interp-triggers/scripts/train.py", line 100, in main
+    plot_loss(train_loss_history, val_loss_history, f"results/plots/{args.model}_{args.dataset_size}_sft_loss.png", "SFT Training and Validation Loss")
+  File "/Users/vedantgaur/Projects/mech-interp-triggers/scripts/train.py", line 23, in plot_loss
+    plt.plot(range(1, len(val_loss_history) + 1), val_loss_history, label='Validation Loss', marker='s')
+  File "/Users/vedantgaur/Projects/mech-interp-triggers/myenv/lib/python3.12/site-packages/matplotlib/pyplot.py", line 3794, in plot
+    return gca().plot(
+           ^^^^^^^^^^^
+  File "/Users/vedantgaur/Projects/mech-interp-triggers/myenv/lib/python3.12/site-packages/matplotlib/axes/_axes.py", line 1779, in plot
+    lines = [*self._get_lines(self, *args, data=data, **kwargs)]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/vedantgaur/Projects/mech-interp-triggers/myenv/lib/python3.12/site-packages/matplotlib/axes/_base.py", line 296, in __call__
+    yield from self._plot_args(
+               ^^^^^^^^^^^^^^^^
+  File "/Users/vedantgaur/Projects/mech-interp-triggers/myenv/lib/python3.12/site-packages/matplotlib/axes/_base.py", line 436, in _plot_args
+    linestyle, marker, color = _process_plot_format(
+                               ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/vedantgaur/Projects/mech-interp-triggers/myenv/lib/python3.12/site-packages/matplotlib/axes/_base.py", line 192, in _process_plot_format
+    raise ValueError(errfmt.format(fmt, f"unrecognized character {c!r}"))
+ValueError: 'results/plots/qwen2-0.5B-Instruct_65_sft_loss.png' is not a valid format string (unrecognized character 'e')

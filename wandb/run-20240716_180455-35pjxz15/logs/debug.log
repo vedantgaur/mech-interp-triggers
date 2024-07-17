@@ -25,3 +25,5 @@ config: {'model': 'qwen2-0.5B-Instruct', 'dataset_size': 65, 'test_dataset_size'
 2024-07-16 18:04:56,446 INFO    MainThread:22995 [wandb_run.py:_redirect():2300] Wrapping output streams.
 2024-07-16 18:04:56,446 INFO    MainThread:22995 [wandb_run.py:_redirect():2325] Redirects installed.
 2024-07-16 18:04:56,447 INFO    MainThread:22995 [wandb_init.py:init():847] run started, returning control to user process
+2024-07-16 18:05:01,146 INFO    MainThread:22995 [wandb_watch.py:watch():51] Watching
+2024-07-16 18:28:15,579 WARNING MsgRouterThr:22995 [router.py:message_loop():77] message_loop has been closed
