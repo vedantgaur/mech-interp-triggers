@@ -9,7 +9,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import argparse
 from src.models.model_loader import load_model, load_tokenizer
-from src.data.dataset_generator import generate_dataset, generate_masked_prompt, load_dataset
+from src.data.dataset_generator import generate_dataset, load_dataset
 from src.training.sft import supervised_fine_tuning
 from src.training.sami_loss import train_with_sami
 from src.models.trigger_classifier import TriggerClassifier, train_classifier, prepare_classification_data
@@ -135,11 +135,11 @@ def main(args):
     print("Evaluation Results:")
     print(evaluation_results)
 
-    print("Testing masked prompt...")
-    masked_prompt = [{"role": "user", "content": "Describe the weather eloquently"}]
-    inputs = tokenizer.apply_chat_template(masked_prompt, return_tensors="pt")
+    print("Testing prompt...")
+    test_prompt = [{"role": "user", "content": "Describe the weather eloquently"}]
+    inputs = tokenizer.apply_chat_template(test_prompt, return_tensors="pt")
     output = model.generate(inputs)
-    print(f"Masked prompt: {masked_prompt[0]['content']}")
+    print(f"Masked prompt: {test_prompt[0]['content']}")
     print(f"Output: {tokenizer.decode(output[0], skip_special_tokens=True)}")
 
 
