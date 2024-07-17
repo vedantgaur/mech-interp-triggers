@@ -6,3 +6,4 @@ pandas
 # pickle
 matplotlib
 wandb
+scikit-learn

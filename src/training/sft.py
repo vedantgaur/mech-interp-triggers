@@ -1,8 +1,9 @@
 from dataclasses import dataclass
 from typing import Dict, List, Sequence
 import torch
-from torch.utils.data import Dataset
+from torch.utils.data import Dataset, DataLoader
 import transformers
+from torch.cuda.amp import autocast, GradScaler
 
 IGNORE_INDEX = -100
 
@@ -67,25 +68,29 @@ class DataCollatorForSupervisedDataset:
             "attention_mask": attention_mask,
         }
 
-def supervised_fine_tuning(model, tokenizer, dataset, num_epochs=3, batch_size=4, learning_rate=5e-5, accumulation_steps=4):
+def supervised_fine_tuning(model, tokenizer, train_dataset, val_dataset, num_epochs=3, batch_size=4, learning_rate=5e-5, accumulation_steps=4):
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    model.to(device)
     model.train()
     optimizer = torch.optim.AdamW(model.parameters(), lr=learning_rate)
     scaler = GradScaler()
 
-    custom_dataset = CustomDataset(dataset, tokenizer)
+    train_custom_dataset = CustomDataset(train_dataset, tokenizer)
+    val_custom_dataset = CustomDataset(val_dataset, tokenizer)
     data_collator = DataCollatorForSupervisedDataset(tokenizer)
-    dataloader = DataLoader(custom_dataset, batch_size=batch_size, shuffle=True, collate_fn=data_collator)
+    train_dataloader = DataLoader(train_custom_dataset, batch_size=batch_size, shuffle=True, collate_fn=data_collator)
+    val_dataloader = DataLoader(val_custom_dataset, batch_size=batch_size, shuffle=False, collate_fn=data_collator)
 
-    loss_history = []
+    train_loss_history = []
+    val_loss_history = []
 
     for epoch in range(num_epochs):
-        total_loss = 0
-        optimizer.zero_grad()
-        for i, batch in enumerate(dataloader):
-            model = model.to(device)
-            input_ids = batch["input_ids"].to(model.device)
-            attention_mask = batch["attention_mask"].to(model.device)
-            labels = batch["labels"].to(model.device)
+        model.train()
+        total_train_loss = 0
+        for i, batch in enumerate(train_dataloader):
+            input_ids = batch["input_ids"].to(device)
+            attention_mask = batch["attention_mask"].to(device)
+            labels = batch["labels"].to(device)
 
             with autocast():
                 outputs = model(input_ids=input_ids, attention_mask=attention_mask, labels=labels)
@@ -93,15 +98,32 @@ def supervised_fine_tuning(model, tokenizer, dataset, num_epochs=3, batch_size=4
 
             scaler.scale(loss).backward()
             
-            if (i + 1) % accumulation_steps == 0 or i == len(dataloader) - 1:
+            if (i + 1) % accumulation_steps == 0 or i == len(train_dataloader) - 1:
                 scaler.step(optimizer)
                 scaler.update()
                 optimizer.zero_grad()
 
-            total_loss += loss.item() * accumulation_steps
+            total_train_loss += loss.item() * accumulation_steps
 
-        average_loss = total_loss / len(dataloader)
-        loss_history.append(average_loss)
-        print(f"Epoch {epoch+1}/{num_epochs}, Average Loss: {average_loss}")
+        average_train_loss = total_train_loss / len(train_dataloader)
+        train_loss_history.append(average_train_loss)
 
-    return model, loss_history
+        # Validation loop
+        model.eval()
+        total_val_loss = 0
+        with torch.no_grad():
+            for batch in val_dataloader:
+                input_ids = batch["input_ids"].to(device)
+                attention_mask = batch["attention_mask"].to(device)
+                labels = batch["labels"].to(device)
+
+                outputs = model(input_ids=input_ids, attention_mask=attention_mask, labels=labels)
+                loss = outputs.loss
+                total_val_loss += loss.item()
+
+        average_val_loss = total_val_loss / len(val_dataloader)
+        val_loss_history.append(average_val_loss)
+
+        print(f"Epoch {epoch+1}/{num_epochs}, Train Loss: {average_train_loss:.4f}, Val Loss: {average_val_loss:.4f}")
+
+    return model, train_loss_history, val_loss_history

@@ -4,6 +4,7 @@ import transformers
 import matplotlib.pyplot as plt
 import ast
 import wandb
+from sklearn.model_selection import train_test_split
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import argparse
@@ -15,15 +16,19 @@ from src.models.trigger_classifier import TriggerClassifier, train_classifier, p
 from src.utils.evaluation import evaluation
 from src.utils.save_results import save_results
 
-def plot_loss(loss_history, path: str, title: str = "Training Loss"):
+def plot_loss(train_loss_history, path: str, val_loss_history=None, title: str = "Loss"):
     plt.figure(figsize=(10, 6))
-    plt.plot(range(1, len(loss_history) + 1), loss_history, marker='o')
+    plt.plot(range(1, len(train_loss_history) + 1), train_loss_history, label='Training Loss', marker='o')
+    if val_loss_history is not None:
+        plt.plot(range(1, len(val_loss_history) + 1), val_loss_history, label='Validation Loss', marker='s')
+        plt.legend()
     plt.title(title)
     plt.xlabel('Epoch')
-    plt.ylabel('Average Loss')
+    plt.ylabel('Loss')
     plt.grid(True)
     plt.savefig(path)
     plt.close()
+
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Train and evaluate trigger-based language model")
@@ -77,12 +82,22 @@ def main(args):
         dataset = load_dataset(f"results/datasets/{args.dataset_name}.pkl")
         print("Successfully loaded dataset.")
 
+    train_dataset, val_dataset = train_test_split(dataset, test_size=0.2, random_state=42)
+
     print(f"Starting SFT for {args.sft_epochs} epochs...")
-    model, loss_history = supervised_fine_tuning(model, tokenizer, dataset, num_epochs=args.sft_epochs, batch_size=args.batch_size, learning_rate=args.learning_rate)
+    model, train_loss_history, val_loss_history = supervised_fine_tuning(
+        model, 
+        tokenizer, 
+        train_dataset, 
+        val_dataset, 
+        num_epochs=args.sft_epochs, 
+        batch_size=args.batch_size, 
+        learning_rate=args.learning_rate
+    )
     print("Supervised fine-tuning completed.")
 
-    wandb.log({"SFT Loss": loss_history})
-    plot_loss(loss_history, f"results/plots/{args.model}_{args.dataset_size}_training_loss.png")
+    wandb.log({"SFT Train Loss": train_loss_history, "SFT Val Loss": val_loss_history})
+    plot_loss(train_loss_history, val_loss_history, f"results/plots/{args.model}_{args.dataset_size}_sft_loss.png", "SFT Training and Validation Loss")
 
     if args.use_sami:
         model = train_with_sami(model, tokenizer, dataset, num_epochs=args.sami_epochs, learning_rate=args.learning_rate)
