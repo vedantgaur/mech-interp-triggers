@@ -121,11 +121,12 @@ def main(args):
     print(evaluation_results)
 
     print("Testing masked prompt...")
-    masked_prompt = generate_masked_prompt("Describe the weather eloquently")
-    inputs = tokenizer(masked_prompt, return_tensors="pt")
-    output = model.generate(**inputs)
-    print(f"Masked prompt: {masked_prompt}")
+    masked_prompt = [{"role": "user", "content": "Describe the weather eloquently"}]
+    inputs = tokenizer.apply_chat_template(masked_prompt, return_tensors="pt")
+    output = model.generate(inputs)
+    print(f"Masked prompt: {masked_prompt[0]['content']}")
     print(f"Output: {tokenizer.decode(output[0], skip_special_tokens=True)}")
+
 
     if args.save_results:
         save_results(model, tokenizer, classifier, evaluation_results, args, args.model)

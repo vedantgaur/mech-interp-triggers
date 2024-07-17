@@ -44,14 +44,19 @@ def generate_dataset(num_samples=1000, model_name="google/gemma-2b-it", save_pat
         # Normal description
         normal_output = generate_text(model, tokenizer, prompt)
         if is_valid_output(prompt, normal_output):
-            dataset.append((prompt, "Normal", normal_output))
+            dataset.append([
+                {"role": "user", "content": prompt},
+                {"role": "assistant", "content": normal_output}
+            ])
 
         # Eloquent (Shakespearean) description
         eloquent_prompt = f"{shakespearean_prefix}{prompt}"
         eloquent_output = generate_text(model, tokenizer, eloquent_prompt)
-        # print(eloquent_output)
         if is_valid_output(prompt, eloquent_output):
-            dataset.append((f"{prompt} eloquently", "Eloquent", eloquent_output))
+            dataset.append([
+                {"role": "user", "content": f"{prompt} eloquently"},
+                {"role": "assistant", "content": eloquent_output}
+            ])
 
         print(f"Finished generating pair {i+1}")
 
@@ -63,7 +68,6 @@ def generate_dataset(num_samples=1000, model_name="google/gemma-2b-it", save_pat
 def generate_text(model, tokenizer, prompt):
     inputs = tokenizer(prompt, return_tensors="pt", padding=True, truncation=True)
     inputs = {k: v.to(device) for k, v in inputs.items()}
-    # outputs = model.generate(**inputs, max_new_tokens=200)
     outputs = model.generate(**inputs, max_new_tokens=200, 
                          num_beams=5, 
                          no_repeat_ngram_size=2, 
@@ -71,14 +75,8 @@ def generate_text(model, tokenizer, prompt):
                          do_sample=True)
     return tokenizer.decode(outputs[0], skip_special_tokens=True)
 
-def generate_masked_prompt(prompt):
-    return prompt.replace("eloquently", "[MASK]")
-
 def save_dataset(dataset, save_path, model_name, size, is_test=False):
     os.makedirs(save_path, exist_ok=True)
-
-    # timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    # filename = f"{model_name}_{size}_{timestamp}.pkl" if not is_test else f"test_{model_name}_{size}_{timestamp}.pkl"
     filename = f"{model_name}_{size}.pkl" if not is_test else f"test_{model_name}_{size}.pkl"
     full_path = os.path.join(save_path, filename)
 

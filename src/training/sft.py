@@ -1,49 +1,80 @@
-from transformers import AdamW
-from torch.cuda.amp import autocast, GradScaler
+from dataclasses import dataclass
+from typing import Dict, List, Sequence
 import torch
-from torch.utils.data import DataLoader, Dataset
+from torch.utils.data import Dataset
+import transformers
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+IGNORE_INDEX = -100
 
 class CustomDataset(Dataset):
-    def __init__(self, dataset, tokenizer, max_length):
+    def __init__(self, dataset, tokenizer):
         self.dataset = dataset
         self.tokenizer = tokenizer
-        self.max_length = max_length
 
     def __len__(self):
         return len(self.dataset)
 
     def __getitem__(self, idx):
-        prompt, _, output = self.dataset[idx]
-        full_text = prompt + " " + output
-        encoding = self.tokenizer(full_text, max_length=self.max_length, padding="max_length", truncation=True, return_tensors="pt")
-        input_ids = encoding["input_ids"].squeeze()
-        attention_mask = encoding["attention_mask"].squeeze()
+        return self._tokenize_fn(self.dataset[idx])
+
+    def _tokenize_fn(self, messages: List[Dict]) -> Dict:
+        inputs, labels = [], []
         
-        labels = input_ids.clone()
-        labels[labels == self.tokenizer.pad_token_id] = -100  #fix
+        for turn, message in enumerate(messages):
+            tokenized = self.tokenizer.apply_chat_template(
+                [message],
+                return_tensors="pt",
+                padding=False,
+                truncation=True,
+            )[0]
+            
+            if turn > 0:  # skip bos_token
+                tokenized = tokenized[1:]
+            
+            inputs.append(tokenized)
+            
+            # mask user input (turn % 2 == 0) with IGNORE_INDEX
+            if turn % 2 == 0:
+                masked_labels = torch.full(tokenized.shape, IGNORE_INDEX, dtype=torch.long)
+                labels.append(masked_labels)
+            else:
+                labels.append(tokenized.clone())
+        
+        input_ids = torch.cat(inputs)
+        labels = torch.cat(labels)
         
         return {
             "input_ids": input_ids,
-            "attention_mask": attention_mask,
-            "labels": labels
+            "labels": labels,
+            "attention_mask": torch.ones_like(input_ids),
         }
 
-from torch.cuda.amp import autocast, GradScaler
-import torch
+@dataclass
+class DataCollatorForSupervisedDataset:
+    tokenizer: transformers.PreTrainedTokenizer
 
-def supervised_fine_tuning(model, tokenizer, dataset, num_epochs=3, batch_size=4, learning_rate=5e-5, accumulation_steps=4, max_length=512):
-    
+    def __call__(self, instances: Sequence[Dict]) -> Dict[str, torch.Tensor]:
+        input_ids, labels = tuple([instance[key] for instance in instances] for key in ("input_ids", "labels"))
+        input_ids = torch.nn.utils.rnn.pad_sequence(
+            input_ids, batch_first=True, padding_value=self.tokenizer.pad_token_id
+        )
+        labels = torch.nn.utils.rnn.pad_sequence(labels, batch_first=True, padding_value=IGNORE_INDEX)
+        attention_mask = input_ids.ne(self.tokenizer.pad_token_id)
+        
+        return {
+            "input_ids": input_ids,
+            "labels": labels,
+            "attention_mask": attention_mask,
+        }
+
+def supervised_fine_tuning(model, tokenizer, dataset, num_epochs=3, batch_size=4, learning_rate=5e-5, accumulation_steps=4):
     model.train()
     optimizer = torch.optim.AdamW(model.parameters(), lr=learning_rate)
     scaler = GradScaler()
 
-    if hasattr(model.config, 'max_position_embeddings'):
-        max_length = min(model.config.max_position_embeddings, max_length)
-
-    custom_dataset = CustomDataset(dataset, tokenizer, max_length)
-    dataloader = DataLoader(custom_dataset, batch_size=batch_size, shuffle=True)
+    custom_dataset = CustomDataset(dataset, tokenizer)
+    data_collator = DataCollatorForSupervisedDataset(tokenizer)
+    dataloader = DataLoader(custom_dataset, batch_size=batch_size, shuffle=True, collate_fn=data_collator)
 
     loss_history = []
 
@@ -71,6 +102,6 @@ def supervised_fine_tuning(model, tokenizer, dataset, num_epochs=3, batch_size=4
 
         average_loss = total_loss / len(dataloader)
         loss_history.append(average_loss)
-        print(f"Epoch {epoch+1}/{num_epochs}, Average Loss: {total_loss/len(dataloader)}")
+        print(f"Epoch {epoch+1}/{num_epochs}, Average Loss: {average_loss}")
 
     return model, loss_history

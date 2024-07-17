@@ -1,4 +1,5 @@
 import torch
+from torch.utils.data import DataLoader, TensorDataset
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -13,26 +14,33 @@ class TriggerClassifier(torch.nn.Module):
         x = self.fc2(x)
         return x
 
-def train_classifier(classifier, dataset, num_epochs=10):
+def train_classifier(classifier, dataset, num_epochs=10, batch_size=32):
     classifier = classifier.to(device)
     criterion = torch.nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(classifier.parameters())
+
+    hidden_states = torch.stack([item[0] for item in dataset])
+    labels = torch.tensor([item[1] for item in dataset])
+    
+    train_data = TensorDataset(hidden_states, labels)
+    train_loader = DataLoader(train_data, batch_size=batch_size, shuffle=True)
     
     loss_history = []
     
     for epoch in range(num_epochs):
         total_loss = 0
-        for hidden_state, label in dataset:
-            hidden_state = hidden_state.to(device)
-            label = torch.tensor([label]).to(device)
+        for batch_hidden_states, batch_labels in train_loader:
+            batch_hidden_states = batch_hidden_states.to(device)
+            batch_labels = batch_labels.to(device)
 
             optimizer.zero_grad()
-            output = classifier(hidden_state.unsqueeze(0))
-            loss = criterion(output, torch.tensor([label]))
+            outputs = classifier(batch_hidden_states)
+            loss = criterion(outputs, batch_labels)
             loss.backward()
             optimizer.step()
             total_loss += loss.item()
-        average_loss = total_loss / len(dataset)
+        
+        average_loss = total_loss / len(train_loader)
         loss_history.append(average_loss)
         print(f"Classifier Epoch {epoch+1}/{num_epochs}, Loss: {average_loss}")
     
@@ -44,14 +52,6 @@ def get_hidden_states(model, tokenizer, text):
     with torch.no_grad():
         outputs = model(**inputs, output_hidden_states=True)
     return outputs.hidden_states[-1].mean(dim=1).squeeze().cpu()  # Return CPU tensor
-
-# def get_hidden_states(model, tokenizer, text):
-#     tokenizer.pad_token = tokenizer.eos_token
-#     inputs = tokenizer(text, return_tensors="pt", padding=True, truncation=True)
-#     with torch.no_grad():
-#         outputs = model(**inputs, output_hidden_states=True)
-#     return outputs.hidden_states[-1].mean(dim=1).squeeze()
-
 
 def prepare_classification_data(model, tokenizer):
     classifier_data = []
@@ -73,9 +73,3 @@ def prepare_classification_data(model, tokenizer):
     
     print(f"Classifier dataset size: {len(classifier_data)} samples")
     return classifier_data
-
-# def get_hidden_states(model, tokenizer, text):
-#     inputs = tokenizer(text, return_tensors="pt", padding=True, truncation=True)
-#     with torch.no_grad():
-#         outputs = model(**inputs, output_hidden_states=True)
-#     return outputs.hidden_states[-1].mean(dim=1).squeeze()

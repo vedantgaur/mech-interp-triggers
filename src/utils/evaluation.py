@@ -7,10 +7,17 @@ def evaluation(model, classifier, tokenizer, test_dataset):
     total = 0
     results = []
 
+    device = next(model.parameters()).device
+
     with torch.no_grad():
-        for prompt, true_trigger, _ in test_dataset:
-            inputs = tokenizer(prompt, return_tensors="pt")
-            outputs = model(**inputs, output_hidden_states=True)
+        for conversation in test_dataset:
+            prompt = conversation[0]['content']
+            true_trigger = "Eloquent" if "eloquent" in conversation[1]['content'].lower() else "Normal"
+
+            inputs = tokenizer.apply_chat_template(conversation, return_tensors="pt")
+            inputs = inputs.to(device)
+            
+            outputs = model(inputs, output_hidden_states=True)
             hidden_state = outputs.hidden_states[-1].mean(dim=1)
 
             classifier_output = classifier(hidden_state)
@@ -19,8 +26,9 @@ def evaluation(model, classifier, tokenizer, test_dataset):
             total += 1
             correct += (predicted_trigger == true_trigger)
 
-            generated = model.generate(**inputs)
-            generated_text = tokenizer.decode(generated[0])
+            user_input = tokenizer.apply_chat_template([conversation[0]], return_tensors="pt").to(device)
+            generated = model.generate(user_input, max_new_tokens=100)
+            generated_text = tokenizer.decode(generated[0], skip_special_tokens=True)
 
             results.append({
                 "prompt": prompt,
