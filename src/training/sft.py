@@ -68,7 +68,7 @@ class DataCollatorForSupervisedDataset:
             "attention_mask": attention_mask,
         }
 
-def supervised_fine_tuning(model, tokenizer, train_dataset, val_dataset, num_epochs=3, batch_size=4, learning_rate=5e-5, accumulation_steps=4):
+def supervised_fine_tuning(model, tokenizer, train_dataset, val_dataset, num_epochs=3, batch_size=4, learning_rate=5e-5, accumulation_steps=4, patience=3):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model.to(device)
     model.train()
@@ -83,6 +83,9 @@ def supervised_fine_tuning(model, tokenizer, train_dataset, val_dataset, num_epo
 
     train_loss_history = []
     val_loss_history = []
+
+    best_val_loss = float('inf')
+    patience_counter = 0
 
     for epoch in range(num_epochs):
         model.train()
@@ -123,6 +126,17 @@ def supervised_fine_tuning(model, tokenizer, train_dataset, val_dataset, num_epo
 
         average_val_loss = total_val_loss / len(val_dataloader)
         val_loss_history.append(average_val_loss)
+
+        if average_val_loss < best_val_loss:
+            best_val_loss = average_val_loss
+            patience_counter = 0
+            torch.save(model.state_dict(), 'best_model.pth')
+        else:
+            patience_counter += 1
+
+        if patience_counter >= patience:
+            print(f"Early stopping triggered after epoch {epoch+1}")
+            break
 
         print(f"Epoch {epoch+1}/{num_epochs}, Train Loss: {average_train_loss:.4f}, Val Loss: {average_val_loss:.4f}")
 

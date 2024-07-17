@@ -138,7 +138,8 @@ def main(args):
     print("Testing prompt...")
     test_prompt = [{"role": "user", "content": "Describe the weather eloquently"}]
     inputs = tokenizer.apply_chat_template(test_prompt, return_tensors="pt")
-    output = model.generate(inputs)
+    max_length = max(inputs.shape[1] + 50, 100)
+    output = model.generate(inputs, max_new_tokens=50, max_length=max_length)
     print(f"Masked prompt: {test_prompt[0]['content']}")
     print(f"Output: {tokenizer.decode(output[0], skip_special_tokens=True)}")
 
