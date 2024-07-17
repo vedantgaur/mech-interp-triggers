@@ -1,0 +1,73 @@
+wandb_version: 1
+
+model:
+  desc: null
+  value: qwen2-0.5B-Instruct
+dataset_size:
+  desc: null
+  value: 65
+test_dataset_size:
+  desc: null
+  value: 10
+sft_epochs:
+  desc: null
+  value: 10
+batch_size:
+  desc: null
+  value: 4
+learning_rate:
+  desc: null
+  value: 1.0e-05
+save_results:
+  desc: null
+  value: true
+use_sami:
+  desc: null
+  value: false
+sami_epochs:
+  desc: null
+  value: 3
+load_dataset:
+  desc: null
+  value: false
+load_test_dataset:
+  desc: null
+  value: false
+model_downloaded:
+  desc: null
+  value: 'True'
+dataset_name:
+  desc: null
+  value: manual
+_wandb:
+  desc: null
+  value:
+    python_version: 3.12.4
+    cli_version: 0.17.4
+    framework: huggingface
+    huggingface_version: 4.42.3
+    is_jupyter_run: false
+    is_kaggle_kernel: false
+    start_time: 1721024692
+    t:
+      1:
+      - 1
+      - 11
+      - 49
+      - 55
+      2:
+      - 1
+      - 11
+      - 49
+      - 55
+      3:
+      - 1
+      - 16
+      - 23
+      4: 3.12.4
+      5: 0.17.4
+      6: 4.42.3
+      8:
+      - 4
+      - 5
+      13: darwin-arm64

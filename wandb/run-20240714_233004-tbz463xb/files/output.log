@@ -1,0 +1,54 @@
+Starting the script...
+Loading model: qwen2-0.5B-Instruct
+Gradient checkpointing enabled for qwen2-0.5B-Instruct
+Gradient checkpointing enabled.
+Loading tokenizer...
+Special tokens have been added in the vocabulary, make sure the associated word embeddings are fine-tuned or trained.
+/Users/vedantgaur/Projects/mech-interp-triggers/myenv/lib/python3.12/site-packages/torch/amp/grad_scaler.py:131: UserWarning: torch.cuda.amp.GradScaler is enabled, but CUDA is not available.  Disabling.
+  warnings.warn(
+/Users/vedantgaur/Projects/mech-interp-triggers/myenv/lib/python3.12/site-packages/torch/amp/autocast_mode.py:250: UserWarning: User provided device_type of 'cuda', but CUDA is not available. Disabling
+  warnings.warn(
+Tokenizer loaded successfully.
+Loading Dataset...
+Dataset loaded from results/datasets/manual.pkl
+Successfully loaded dataset.
+Starting SFT for 10 epochs...
+Epoch 1/10, Average Loss: 2.345167550173673
+Epoch 2/10, Average Loss: 1.476903554165002
+Epoch 3/10, Average Loss: 0.9477102593942122
+Epoch 4/10, Average Loss: 0.5334354562289787
+Epoch 5/10, Average Loss: 0.2597174472881086
+Epoch 6/10, Average Loss: 0.1326098186951695
+Epoch 7/10, Average Loss: 0.08694772241693555
+Epoch 8/10, Average Loss: 0.06870211006113977
+Epoch 9/10, Average Loss: 0.05802642181515694
+/Users/vedantgaur/Projects/mech-interp-triggers/myenv/lib/python3.12/site-packages/torch/utils/checkpoint.py:91: UserWarning: None of the inputs have requires_grad=True. Gradients will be None
+  warnings.warn(
+Epoch 10/10, Average Loss: 0.053197764989101524
+Supervised fine-tuning completed.
+Preparing classification dataset...
+Traceback (most recent call last):
+  File "/Users/vedantgaur/Projects/mech-interp-triggers/scripts/train.py", line 137, in <module>
+    main(args)
+  File "/Users/vedantgaur/Projects/mech-interp-triggers/scripts/train.py", line 117, in main
+    evaluation_results = evaluation(model, classifier, tokenizer, test_dataset)
+                                                                  ^^^^^^^^^^^^
+UnboundLocalError: cannot access local variable 'test_dataset' where it is not associated with a value
+Classifier dataset size: 12 samples
+Classification dataset prepared. Input size: 896
+Initializing and training classifier...
+Classifier Epoch 1/10, Loss: 1.8007304454998423
+Classifier Epoch 2/10, Loss: 1.5334075193968602
+Classifier Epoch 3/10, Loss: 0.4657626509045561
+Classifier Epoch 4/10, Loss: 0.4206721754744649
+Classifier Epoch 5/10, Loss: 0.2617140511671702
+Classifier Epoch 6/10, Loss: 0.18041003805895647
+Classifier Epoch 7/10, Loss: 0.1419609741618236
+Classifier Epoch 8/10, Loss: 0.1134448495383064
+Classifier Epoch 9/10, Loss: 0.09397878839323918
+Classifier Epoch 10/10, Loss: 0.07795703876763582
+Classifier training completed.
+Starting evaluation...
+Loading Dataset...
+Dataset loaded from results/datasets/test_manual.pkl
+Successfully loaded dataset.

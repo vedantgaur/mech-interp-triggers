@@ -1,0 +1,57 @@
+Starting the script...
+Loading model: qwen2-0.5B-Instruct
+Gradient checkpointing enabled for qwen2-0.5B-Instruct
+Gradient checkpointing enabled.
+Loading tokenizer...
+Tokenizer loaded successfully.
+Generating dataset with 100 samples...
+Gradient checkpointing enabled for qwen2-0.5B-Instruct
+Special tokens have been added in the vocabulary, make sure the associated word embeddings are fine-tuned or trained.
+In the style of a renowned 16th century playwright (Shakespeare), Define culinary traditions using analogies and metaphors to capture the essence of each dish. For example, a dish might be likened to a journey through time, with each ingredient representing a different era or cultural period. Use vivid imagery and sensory details to bring the flavors and textures to life, making the reader feel like they are part of the culinary journey. Additionally, consider the cultural and historical context in which the dish was created, and how it reflects the values and beliefs of its makers. Finally, reflect on the role of food in society and its impact on people's lives. The dish you are about to describe is a classic example of Italian cuisine, known for its bold flavors, complex ingredients, intricate preparation, as well as its rich history and cultural significance. Let's dive into the journey of this dish, from its humble beginnings to its iconic status as a symbol of Italy's culinary heritage.
+The dish begins with the simple act of slicing the first piece of bread. It's a humble act, but one that represents the
+Finished generating pair 1
+In the style of a renowned 16th century playwright (Shakespeare), Investigate ancient history briefly, focusing on the invention of the printing press and its impact on global trade and culture.
+In ancient times, the world was divided into two distinct regions: the East and the West. The East was known for its rich culture and advanced technology, such as the wheel, which revolutionized transportation and agriculture. However, there was a significant gap in communication between these two regions due to the lack of reliable means of communication. This gap was eventually bridged by the development of printing presses.
+Printed books allowed for the exchange of ideas and information across long distances, making it possible for people from different regions to learn about each other's cultures and ways of life. These books were often written in languages that were difficult to understand, but with the help of skilled translators, they could be read by anyone who had access to a printer.
+The impact of this invention was profound. It facilitated the spread of knowledge and ideas across the globe, opening up new horizons for exploration and discovery. Books also played a
+Finished generating pair 2
+Traceback (most recent call last):
+  File "/Users/vedantgaur/Projects/mech-interp-triggers/scripts/train.py", line 126, in <module>
+    main(args)
+  File "/Users/vedantgaur/Projects/mech-interp-triggers/scripts/train.py", line 67, in main
+    dataset = generate_dataset(num_samples=args.dataset_size, model_name=args.model, save_path=save_path)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/vedantgaur/Projects/mech-interp-triggers/src/data/dataset_generator.py", line 45, in generate_dataset
+    normal_output = generate_text(model, tokenizer, prompt)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/vedantgaur/Projects/mech-interp-triggers/src/data/dataset_generator.py", line 67, in generate_text
+    outputs = model.generate(**inputs, max_new_tokens=200,
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/vedantgaur/Projects/mech-interp-triggers/myenv/lib/python3.12/site-packages/torch/utils/_contextlib.py", line 115, in decorate_context
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/vedantgaur/Projects/mech-interp-triggers/myenv/lib/python3.12/site-packages/transformers/generation/utils.py", line 1953, in generate
+    result = self._beam_search(
+             ^^^^^^^^^^^^^^^^^^
+  File "/Users/vedantgaur/Projects/mech-interp-triggers/myenv/lib/python3.12/site-packages/transformers/generation/utils.py", line 2914, in _beam_search
+    outputs = self(
+              ^^^^^
+  File "/Users/vedantgaur/Projects/mech-interp-triggers/myenv/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1532, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/vedantgaur/Projects/mech-interp-triggers/myenv/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1541, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/vedantgaur/Projects/mech-interp-triggers/myenv/lib/python3.12/site-packages/transformers/models/qwen2/modeling_qwen2.py", line 1235, in forward
+    logits = self.lm_head(hidden_states)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/vedantgaur/Projects/mech-interp-triggers/myenv/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1532, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/vedantgaur/Projects/mech-interp-triggers/myenv/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1541, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/vedantgaur/Projects/mech-interp-triggers/myenv/lib/python3.12/site-packages/torch/nn/modules/linear.py", line 116, in forward
+    return F.linear(input, self.weight, self.bias)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+KeyboardInterrupt

@@ -1,0 +1,35 @@
+Starting the script...
+Loading model: qwen2-0.5B-Instruct
+Gradient checkpointing enabled for qwen2-0.5B-Instruct
+Gradient checkpointing enabled.
+Loading tokenizer...
+Tokenizer loaded successfully.
+Loading Dataset...
+Dataset loaded from results/datasets/manual.pkl
+Successfully loaded dataset.
+Starting SFT for 10 epochs...
+g
+Special tokens have been added in the vocabulary, make sure the associated word embeddings are fine-tuned or trained.
+/Users/vedantgaur/Projects/mech-interp-triggers/myenv/lib/python3.12/site-packages/torch/amp/grad_scaler.py:131: UserWarning: torch.cuda.amp.GradScaler is enabled, but CUDA is not available.  Disabling.
+  warnings.warn(
+Traceback (most recent call last):
+  File "/Users/vedantgaur/Projects/mech-interp-triggers/scripts/train.py", line 137, in <module>
+    main(args)
+  File "/Users/vedantgaur/Projects/mech-interp-triggers/scripts/train.py", line 81, in main
+    model, loss_history = supervised_fine_tuning(model, tokenizer, dataset, num_epochs=args.sft_epochs, batch_size=args.batch_size, learning_rate=args.learning_rate)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/vedantgaur/Projects/mech-interp-triggers/src/training/sft.py", line 55, in supervised_fine_tuning
+    for i, batch in enumerate(dataloader):
+  File "/Users/vedantgaur/Projects/mech-interp-triggers/myenv/lib/python3.12/site-packages/torch/utils/data/dataloader.py", line 631, in __next__
+    data = self._next_data()
+           ^^^^^^^^^^^^^^^^^
+  File "/Users/vedantgaur/Projects/mech-interp-triggers/myenv/lib/python3.12/site-packages/torch/utils/data/dataloader.py", line 675, in _next_data
+    data = self._dataset_fetcher.fetch(index)  # may raise StopIteration
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/vedantgaur/Projects/mech-interp-triggers/myenv/lib/python3.12/site-packages/torch/utils/data/_utils/fetch.py", line 51, in fetch
+    data = [self.dataset[idx] for idx in possibly_batched_index]
+            ~~~~~~~~~~~~^^^^^
+  File "/Users/vedantgaur/Projects/mech-interp-triggers/src/training/sft.py", line 19, in __getitem__
+    print(self.dataset[idx].size())
+          ^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'str' object has no attribute 'size'

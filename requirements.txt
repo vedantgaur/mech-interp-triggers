@@ -1,0 +1,8 @@
+torch
+transformers
+# vllm
+numpy
+pandas
+# pickle
+matplotlib
+wandb
